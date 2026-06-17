@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "net.alek.treeloghighlight.client.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"MultiPlayerGameModeMixin",
+		"PauseScreenMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
