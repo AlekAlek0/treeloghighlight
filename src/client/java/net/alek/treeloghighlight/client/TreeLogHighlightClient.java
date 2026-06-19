@@ -8,8 +8,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -56,7 +55,7 @@ public class TreeLogHighlightClient implements ClientModInitializer {
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             Minecraft client = Minecraft.getInstance();
-            
+
             while (toggleKey.consumeClick()) {
                 config.modEnabled = !config.modEnabled;
                 config.save();
@@ -76,10 +75,10 @@ public class TreeLogHighlightClient implements ClientModInitializer {
             } else {
                 RenderSystem.enableDepthTest();
             }
-            
+
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 
             Tesselator tesselator = Tesselator.getInstance();
             Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
@@ -119,7 +118,7 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                 for (BlockPos pos : logs) {
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
-                    LevelRenderer.renderLineBox(matrixStack, lineBuilder, 0, 0, 0, 1, 1, 1, config.getOutlineR(), config.getOutlineG(), config.getOutlineB(), 0.5f * pulse);
+                    ShapeRenderer.renderLineBox(matrixStack, lineBuilder, 0, 0, 0, 1, 1, 1, config.getOutlineR(), config.getOutlineG(), config.getOutlineB(), 0.5f * pulse);
                     matrixStack.popPose();
                 }
                 MeshData meshData = lineBuilder.build();
@@ -186,6 +185,6 @@ public class TreeLogHighlightClient implements ClientModInitializer {
         BlockPos neighborPos = pos.relative(direction);
         if (TreeLogHighlightManager.isHighlighted(neighborPos)) return false;
         BlockState state = world.getBlockState(neighborPos);
-        return !state.isSolidRender(world, neighborPos);
+        return !state.isSolidRender();
     }
 }
