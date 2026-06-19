@@ -6,8 +6,8 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -90,22 +90,43 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                 "category.treeloghighlight"
         ));
 
-        HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> {
-            Minecraft client = Minecraft.getInstance();
-            if (client.options.hideGui) return;
 
-            if (config.modEnabled && config.showHud) {
-                Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
-                if (!logs.isEmpty()) {
-                    String text = "Logs Remaining: " + logs.size();
-                    guiGraphics.drawString(client.font, text, config.hudX, config.hudY, config.getTextColor());
-                }
-            }
+        HudElementRegistry.addLast(ResourceLocation.fromNamespaceAndPath(
+                        "treeloghighlight",
+                        "hud"),
+                (guiGraphics, tickCounter) -> {
+                    Minecraft client = Minecraft.getInstance();
 
-            if (config.showStatusMessage && System.currentTimeMillis() - statusMessageTime < 3000) {
-                guiGraphics.drawString(client.font, statusMessageText, config.statusHudX, config.statusHudY, 0xFFFFFF);
-            }
-        });
+                    if (client.options.hideGui) {
+                        return;
+                    }
+
+                    if (config.modEnabled && config.showHud) {
+                        Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
+
+                        if (!logs.isEmpty()) {
+                            guiGraphics.drawString(
+                                    client.font,
+                                    "Logs Remaining: " + logs.size(),
+                                    config.hudX,
+                                    config.hudY,
+                                    config.getTextColor()
+                            );
+                        }
+                    }
+
+                    if (config.showStatusMessage &&
+                            System.currentTimeMillis() - statusMessageTime < 3000) {
+
+                        guiGraphics.drawString(
+                                client.font,
+                                statusMessageText,
+                                config.statusHudX,
+                                config.statusHudY,
+                                0xFFFFFF
+                        );
+                    }
+                });
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             Minecraft client = Minecraft.getInstance();
@@ -143,6 +164,7 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                 BufferBuilder bufferBuilder = new BufferBuilder(byteBuffer, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
                 boolean hasData = false;
                 for (BlockPos pos : logs) {
+                    assert matrixStack != null;
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
                     if (drawBox(client.level, pos, bufferBuilder, matrixStack.last().pose(),
@@ -166,6 +188,7 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                 ByteBufferBuilder byteBuffer = new ByteBufferBuilder(linesLayer.bufferSize());
                 BufferBuilder lineBuilder = new BufferBuilder(byteBuffer, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
                 for (BlockPos pos : logs) {
+                    assert matrixStack != null;
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
                     renderLineBox(matrixStack, lineBuilder, 0, 0, 0, 1, 1, 1,
