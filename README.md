@@ -24,7 +24,7 @@ TreeLogHighlight is a client-side Fabric mod for Minecraft that enhances your tr
 
 ## How to Use
 
-1.  **Install**: Ensure you have Fabric Loader installed. Place the `TreeLogHighlight` mod `.jar` file into your `mods` folder.
+1.  **Install**: Ensure you have Fabric Loader, Mod Menu, and Cloth Config installed. Place the `TreeLogHighlight` mod `.jar` file into your `mods` folder.
 2.  **Activate**: In-game, simply left-click (or start breaking) any log block. The mod will then highlight all connected logs of that tree.
 3.  **Toggle**: Press the `H` key (default) to quickly enable or disable the highlighting feature.
 4.  **Configure**: Access the mod's settings through the Mod Menu (usually by pressing `Esc` -> `Mods` -> `TreeLogHighlight` -> `Config`). Here you can customize colors, render modes, HUD options, and enable/disable highlighting for specific wood types you've discovered.
