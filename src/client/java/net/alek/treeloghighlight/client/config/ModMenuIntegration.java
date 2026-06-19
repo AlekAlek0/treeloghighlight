@@ -10,6 +10,7 @@ import net.alek.treeloghighlight.client.TreeLogHighlightConfig;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Map;
@@ -69,7 +70,7 @@ public class ModMenuIntegration implements ModMenuApi {
             for (Map.Entry<String, Boolean> entry : config.woodTypeToggles.entrySet()) {
                 String blockId = entry.getKey();
                 ResourceLocation rl = ResourceLocation.parse(blockId);
-                Block block = BuiltInRegistries.BLOCK.get(rl);
+                Block block = BuiltInRegistries.BLOCK.getOptional(rl).orElse(Blocks.OAK_LOG);
                 
                 String displayName = block.getName().getString();
                 String modNamespace = rl.getNamespace();
