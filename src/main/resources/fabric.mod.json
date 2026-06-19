@@ -2,14 +2,14 @@
 	"schemaVersion": 1,
 	"id": "treeloghighlight",
 	"version": "${version}",
-	"name": "TreeLogHighlight",
+	"name": "Tree Log Highlight",
 	"description": "A Minecraft mod to highlight the remaining wood logs in a tree.",
 	"authors": [
 		"Alek"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://modrinth.com/mod/tree-log-highlight",
+		"sources": "https://github.com/AlekAlek0/treeloghighlight"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/treeloghighlight/icon.png",
@@ -23,9 +23,6 @@
 		],
 		"modmenu": [
 			"net.alek.treeloghighlight.client.config.ModMenuIntegration"
-		],
-		"fabric-datagen": [
-			"net.alek.treeloghighlight.client.TreeLogHighlightDataGenerator"
 		]
 	},
 	"mixins": [
