@@ -32,10 +32,9 @@ public class TreeLogHighlightManager {
         String blockId = BuiltInRegistries.BLOCK.getKey(newType).toString();
         TreeLogHighlightConfig config = TreeLogHighlightClient.getConfig();
 
-        // DISCOVERY LOGIC: Add to config if it's the first time seeing this tree
         if (!config.woodTypeToggles.containsKey(blockId)) {
             config.setWoodEnabled(blockId, true);
-            config.save(); // Save immediately so it persists and shows in UI
+            config.save();
         }
         
         if (!config.isWoodEnabled(blockId)) {
