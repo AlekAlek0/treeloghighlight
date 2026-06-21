@@ -22,17 +22,17 @@ public abstract class PauseScreenMixin extends Screen {
     @Inject(method = "init", at = @At("RETURN"))
     private void addEditHudButton(CallbackInfo ci) {
         TreeLogHighlightConfig config = TreeLogHighlightClient.getConfig();
-        
+
         int x = config.editButtonX;
         if (x == -1) {
             x = this.width - 95; // Default top right
         }
 
         this.addRenderableWidget(Button.builder(Component.literal("Edit Tree HUD"), button -> {
-            Minecraft.getInstance().setScreen(new HudPositionScreen(this));
-        })
-        .pos(x, config.editButtonY)
-        .size(90, 20)
-        .build());
+                    Minecraft.getInstance().setScreen(new HudPositionScreen(this));
+                })
+                .pos(x, config.editButtonY)
+                .size(90, 20)
+                .build());
     }
 }

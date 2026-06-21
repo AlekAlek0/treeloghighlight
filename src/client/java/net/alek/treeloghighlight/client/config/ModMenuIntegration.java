@@ -25,7 +25,7 @@ public class ModMenuIntegration implements ModMenuApi {
 
             TreeLogHighlightConfig config = TreeLogHighlightClient.getConfig();
             ConfigEntryBuilder entryBuilder = builder.entryBuilder();
-            
+
             ConfigCategory general = builder.getOrCreateCategory(Component.literal("General Visuals"));
             ConfigCategory colors = builder.getOrCreateCategory(Component.literal("Colors"));
             ConfigCategory hud = builder.getOrCreateCategory(Component.literal("HUD Settings"));
@@ -71,17 +71,17 @@ public class ModMenuIntegration implements ModMenuApi {
                 String blockId = entry.getKey();
                 ResourceLocation rl = ResourceLocation.parse(blockId);
                 Block block = BuiltInRegistries.BLOCK.getOptional(rl).orElse(Blocks.OAK_LOG);
-                
+
                 String displayName = block.getName().getString();
                 String modNamespace = rl.getNamespace();
                 String modName = modNamespace.substring(0, 1).toUpperCase() + modNamespace.substring(1);
-                
+
                 woodTypes.addEntry(entryBuilder.startBooleanToggle(
-                        Component.literal(displayName + " (" + modName + ")"), 
-                        entry.getValue())
-                    .setDefaultValue(true)
-                    .setSaveConsumer(v -> config.setWoodEnabled(blockId, v))
-                    .build());
+                                Component.literal(displayName + " (" + modName + ")"),
+                                entry.getValue())
+                        .setDefaultValue(true)
+                        .setSaveConsumer(v -> config.setWoodEnabled(blockId, v))
+                        .build());
             }
 
             builder.setSavingRunnable(config::save);

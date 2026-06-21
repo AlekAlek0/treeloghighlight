@@ -18,17 +18,17 @@ public class TreeLogHighlightConfig {
 
     public boolean modEnabled = true;
     public RenderMode renderMode = RenderMode.BOTH;
-    
+
     // Colors
     public boolean syncColors = true;
     public int mainColor = 0xFF8000;
     public int outlineColor = 0xFF8000;
     public int fillColor = 0xFF8000;
     public int textColor = 0xFF8000;
-    
+
     public float alpha = 0.3f;
     public boolean showThroughWalls = true;
-    
+
     // HUD
     public boolean showHud = true;
     public int hudX = 20;
@@ -37,9 +37,9 @@ public class TreeLogHighlightConfig {
     public int statusHudX = 572;
     public int statusHudY = 617;
 
-    public int editButtonX = 10; 
+    public int editButtonX = 10;
     public int editButtonY = 5;
-    
+
     public boolean pulsing = true;
     public float pulseSpeed = 1.0f;
     public float pulseIntensity = 0.5f;
@@ -56,15 +56,15 @@ public class TreeLogHighlightConfig {
                 e.printStackTrace();
             }
         }
-        
+
         if (config == null) {
             config = new TreeLogHighlightConfig();
         }
-        
+
         if (config.woodTypeToggles == null) {
             config.woodTypeToggles = new LinkedHashMap<>();
         }
-        
+
         config.save();
         return config;
     }
@@ -92,6 +92,6 @@ public class TreeLogHighlightConfig {
     public float getOutlineR() { return (((syncColors ? mainColor : outlineColor) >> 16) & 0xFF) / 255.0f; }
     public float getOutlineG() { return (((syncColors ? mainColor : outlineColor) >> 8) & 0xFF) / 255.0f; }
     public float getOutlineB() { return ((syncColors ? mainColor : outlineColor) & 0xFF) / 255.0f; }
-    
+
     public int getTextColor() { return syncColors ? mainColor : textColor; }
 }

@@ -6,8 +6,9 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -90,43 +91,40 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                 "category.treeloghighlight"
         ));
 
+        HudLayerRegistrationCallback.EVENT.register(layeredDrawer -> {
+            layeredDrawer.addLayer(IdentifiedLayer.of(
+                    ResourceLocation.fromNamespaceAndPath("treeloghighlight", "hud"),
+                    (guiGraphics, tickCounter) -> {
+                        Minecraft client = Minecraft.getInstance();
 
-        HudElementRegistry.addLast(ResourceLocation.fromNamespaceAndPath(
-                        "treeloghighlight",
-                        "hud"),
-                (guiGraphics, tickCounter) -> {
-                    Minecraft client = Minecraft.getInstance();
+                        if (client.options.hideGui) return;
 
-                    if (client.options.hideGui) {
-                        return;
-                    }
+                        if (config.modEnabled && config.showHud) {
+                            Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
+                            if (!logs.isEmpty()) {
+                                guiGraphics.drawString(
+                                        client.font,
+                                        "Logs Remaining: " + logs.size(),
+                                        config.hudX,
+                                        config.hudY,
+                                        config.getTextColor()
+                                );
+                            }
+                        }
 
-                    if (config.modEnabled && config.showHud) {
-                        Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
-
-                        if (!logs.isEmpty()) {
+                        if (config.showStatusMessage &&
+                                System.currentTimeMillis() - statusMessageTime < 3000) {
                             guiGraphics.drawString(
                                     client.font,
-                                    "Logs Remaining: " + logs.size(),
-                                    config.hudX,
-                                    config.hudY,
-                                    config.getTextColor()
+                                    statusMessageText,
+                                    config.statusHudX,
+                                    config.statusHudY,
+                                    0xFFFFFF
                             );
                         }
                     }
-
-                    if (config.showStatusMessage &&
-                            System.currentTimeMillis() - statusMessageTime < 3000) {
-
-                        guiGraphics.drawString(
-                                client.font,
-                                statusMessageText,
-                                config.statusHudX,
-                                config.statusHudY,
-                                0xFFFFFF
-                        );
-                    }
-                });
+            ));
+        });
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             Minecraft client = Minecraft.getInstance();

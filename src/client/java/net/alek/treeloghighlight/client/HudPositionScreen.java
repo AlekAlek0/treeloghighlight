@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 public class HudPositionScreen extends Screen {
     private final Screen parent;
     private final TreeLogHighlightConfig config;
-    
+
     private enum Dragging { NONE, LOGS, STATUS, BUTTON }
     private Dragging currentDrag = Dragging.NONE;
     private double dragOffsetX, dragOffsetY;
@@ -44,7 +44,7 @@ public class HudPositionScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         // Draw a simple dark tint instead of the blurry background
         graphics.fill(0, 0, this.width, this.height, 0x44000000);
-        
+
         graphics.drawCenteredString(this.font, "Click and Drag elements to position them", this.width / 2, 10, 0xFFFFFF);
         graphics.drawCenteredString(this.font, "Press ESC to Save and Close", this.width / 2, 22, 0xAAAAAA);
 
@@ -136,7 +136,7 @@ public class HudPositionScreen extends Screen {
             config.editButtonX = (int) (mouseX - dragOffsetX);
             config.editButtonY = (int) (mouseY - dragOffsetY);
         }
-        
+
         config.hudX = Math.max(0, Math.min(config.hudX, this.width - 50));
         config.hudY = Math.max(0, Math.min(config.hudY, this.height - 10));
         config.statusHudX = Math.max(0, Math.min(config.statusHudX, this.width - 50));

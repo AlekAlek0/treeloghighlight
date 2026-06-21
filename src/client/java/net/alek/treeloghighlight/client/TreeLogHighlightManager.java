@@ -15,7 +15,7 @@ public class TreeLogHighlightManager {
     private static Block targetBlockType = null;
     private static BlockPos lastActionPos = null;
     private static long lastUpdateTime = 0;
-    
+
     private static final int MAX_TREE_SIZE = 2000;
     private static final double MAX_PLAYER_DIST_SQ = 2500.0;
     private static final long IDLE_TIMEOUT_MS = 20000;
@@ -36,7 +36,7 @@ public class TreeLogHighlightManager {
             config.setWoodEnabled(blockId, true);
             config.save();
         }
-        
+
         if (!config.isWoodEnabled(blockId)) {
             highlightedLogs.clear();
             return;
@@ -49,17 +49,17 @@ public class TreeLogHighlightManager {
         }
 
         Set<BlockPos> authorizedRoots = findRoots(world, startPos, newType);
-        
+
         Set<BlockPos> foundLogs = new HashSet<>();
         Queue<BlockPos> queue = new LinkedList<>();
         boolean foundNaturalLeaves = false;
-        
+
         queue.add(startPos);
         foundLogs.add(startPos);
 
         while (!queue.isEmpty() && foundLogs.size() < MAX_TREE_SIZE) {
             BlockPos current = queue.poll();
-            
+
             boolean isNearLeaves = false;
             for (BlockPos leafCheck : BlockPos.betweenClosed(current.offset(-1, -1, -1), current.offset(1, 1, 1))) {
                 BlockState state = world.getBlockState(leafCheck);
@@ -87,7 +87,7 @@ public class TreeLogHighlightManager {
                         if (!foundLogs.contains(neighbor)) {
                             BlockState state = world.getBlockState(neighbor);
                             if (state.is(newType)) {
-                                if (isOnGround(world, neighbor) && !authorizedRoots.contains(neighbor)) continue; 
+                                if (isOnGround(world, neighbor) && !authorizedRoots.contains(neighbor)) continue;
                                 foundLogs.add(neighbor);
                                 queue.add(neighbor);
                             }
@@ -96,7 +96,7 @@ public class TreeLogHighlightManager {
                 }
             }
         }
-        
+
         if (!foundNaturalLeaves && !highlightedLogs.contains(startPos)) return;
 
         targetBlockType = newType;
@@ -143,10 +143,10 @@ public class TreeLogHighlightManager {
     public static Set<BlockPos> getHighlightedLogs() {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || highlightedLogs.isEmpty()) return Collections.emptySet();
-        
+
         long timeSinceUpdate = System.currentTimeMillis() - lastUpdateTime;
         double distSq = (lastActionPos != null) ? client.player.distanceToSqr(lastActionPos.getX(), lastActionPos.getY(), lastActionPos.getZ()) : 0;
-        
+
         if (timeSinceUpdate > IDLE_TIMEOUT_MS || (lastActionPos != null && distSq > MAX_PLAYER_DIST_SQ)) {
             highlightedLogs.clear();
             targetBlockType = null;
