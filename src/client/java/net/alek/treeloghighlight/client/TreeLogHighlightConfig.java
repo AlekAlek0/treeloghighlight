@@ -31,11 +31,11 @@ public class TreeLogHighlightConfig {
     
     // HUD
     public boolean showHud = true;
-    public int hudX = 10;
-    public int hudY = 10;
+    public int hudX = 20;
+    public int hudY = 50;
     public boolean showStatusMessage = true;
-    public int statusHudX = -1; 
-    public int statusHudY = -1; 
+    public int statusHudX = 572;
+    public int statusHudY = 617;
 
     public int editButtonX = 10; 
     public int editButtonY = 5;
