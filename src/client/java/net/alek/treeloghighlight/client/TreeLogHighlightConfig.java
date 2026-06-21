@@ -93,5 +93,7 @@ public class TreeLogHighlightConfig {
     public float getOutlineG() { return (((syncColors ? mainColor : outlineColor) >> 8) & 0xFF) / 255.0f; }
     public float getOutlineB() { return ((syncColors ? mainColor : outlineColor) & 0xFF) / 255.0f; }
 
-    public int getTextColor() { return syncColors ? mainColor : textColor; }
+    public int getTextColor() { return 0xFF000000 | (syncColors ? mainColor : textColor);
+
+    }
 }

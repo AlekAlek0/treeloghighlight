@@ -45,8 +45,8 @@ public class HudPositionScreen extends Screen {
         // Draw a simple dark tint instead of the blurry background
         graphics.fill(0, 0, this.width, this.height, 0x44000000);
 
-        graphics.drawCenteredString(this.font, "Click and Drag elements to position them", this.width / 2, 10, 0xFFFFFF);
-        graphics.drawCenteredString(this.font, "Press ESC to Save and Close", this.width / 2, 22, 0xAAAAAA);
+        graphics.drawCenteredString(this.font, "Click and Drag elements to position them", this.width / 2, 10, 0xFFFFFFFF);
+        graphics.drawCenteredString(this.font, "Press ESC to Save and Close", this.width / 2, 22, 0xFFAAAAAA);
 
         // --- 1. Logs Remaining ---
         String logsText = "Logs Remaining: 100";
@@ -54,11 +54,11 @@ public class HudPositionScreen extends Screen {
 
         // --- 2. Status Message ---
         String statusText = "Tree Log Highlight: §aEnabled";
-        renderElement(graphics, mouseX, mouseY, config.statusHudX, config.statusHudY, this.font.width(statusText), this.font.lineHeight, statusText, 0xFFFFFF, Dragging.STATUS);
+        renderElement(graphics, mouseX, mouseY, config.statusHudX, config.statusHudY, this.font.width(statusText), this.font.lineHeight, statusText, 0xFFFFFFFF, Dragging.STATUS);
 
         // --- 3. Edit Button ---
         String buttonText = "[ Edit Tree HUD ]";
-        renderElement(graphics, mouseX, mouseY, config.editButtonX, config.editButtonY, BUTTON_WIDTH, BUTTON_HEIGHT, buttonText, 0xFFFFFF, Dragging.BUTTON);
+        renderElement(graphics, mouseX, mouseY, config.editButtonX, config.editButtonY, BUTTON_WIDTH, BUTTON_HEIGHT, buttonText, 0xFFFFFFFF, Dragging.BUTTON);
 
         // Render widgets (the Reset Button) manually to avoid calling super.render() which causes blur
         super.render(graphics, mouseX, mouseY, delta);
