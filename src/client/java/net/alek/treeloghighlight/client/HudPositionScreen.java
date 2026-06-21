@@ -29,24 +29,15 @@ public class HudPositionScreen extends Screen {
             resetToDefaults();
         }).pos(this.width / 2 - 50, this.height - 30).size(100, 20).build());
 
-        // Initialize status message if at -1
-        if (config.statusHudX == -1 || config.statusHudY == -1) {
-            resetStatusPosition();
-        }
-    }
-
-    private void resetStatusPosition() {
-        String text = "Tree Log Highlight: §aEnabled";
-        config.statusHudX = (this.width - this.font.width(text)) / 2;
-        config.statusHudY = this.height - 68;
     }
 
     private void resetToDefaults() {
-        config.hudX = 10;
+        config.hudX = 20;
         config.hudY = 50;
         config.editButtonX = 10;
         config.editButtonY = 5;
-        resetStatusPosition();
+        config.statusHudX = 572;
+        config.statusHudY = 617;
     }
 
     @Override
