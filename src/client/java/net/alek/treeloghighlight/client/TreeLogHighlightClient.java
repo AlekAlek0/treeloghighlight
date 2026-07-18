@@ -31,8 +31,6 @@ public class TreeLogHighlightClient implements ClientModInitializer {
     private static long statusMessageTime = 0;
     private static String statusMessageText = "";
 
-    // Filled quads with depth test — reuse the built-in DEBUG_QUADS pipeline
-    // (POSITION_COLOR, QUADS, translucent blend, depth test on, no cull)
     private static final RenderType HIGHLIGHT_FILL = RenderType.create(
             "treeloghighlight_fill",
             256,
@@ -40,7 +38,6 @@ public class TreeLogHighlightClient implements ClientModInitializer {
             RenderType.CompositeState.builder().createCompositeState(false)
     );
 
-    // Filled quads, NO depth test — custom pipeline based on DEBUG_FILLED_SNIPPET
     private static final RenderPipeline PIPELINE_FILL_NODEPTH = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
                     .withLocation(ResourceLocation.fromNamespaceAndPath("treeloghighlight", "fill_nodepth"))
@@ -57,8 +54,6 @@ public class TreeLogHighlightClient implements ClientModInitializer {
             RenderType.CompositeState.builder().createCompositeState(false)
     );
 
-    // Lines with depth test — reuse the built-in LINES pipeline
-    // (POSITION_COLOR_NORMAL, LINES, translucent blend, depth test on)
     private static final RenderType HIGHLIGHT_LINES = RenderType.create(
             "treeloghighlight_lines",
             256,
@@ -66,7 +61,6 @@ public class TreeLogHighlightClient implements ClientModInitializer {
             RenderType.CompositeState.builder().createCompositeState(false)
     );
 
-    // Lines, NO depth test — custom pipeline based on LINES_SNIPPET
     private static final RenderPipeline PIPELINE_LINES_NODEPTH = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                     .withLocation(ResourceLocation.fromNamespaceAndPath("treeloghighlight", "lines_nodepth"))
@@ -91,40 +85,36 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                 "category.treeloghighlight"
         ));
 
-        HudLayerRegistrationCallback.EVENT.register(layeredDrawer -> {
-            layeredDrawer.addLayer(IdentifiedLayer.of(
-                    ResourceLocation.fromNamespaceAndPath("treeloghighlight", "hud"),
-                    (guiGraphics, tickCounter) -> {
-                        Minecraft client = Minecraft.getInstance();
+        HudLayerRegistrationCallback.EVENT.register(layeredDrawer -> layeredDrawer.addLayer(IdentifiedLayer.of(
+                ResourceLocation.fromNamespaceAndPath("treeloghighlight", "hud"),
+                (guiGraphics, tickCounter) -> {
+                    Minecraft client = Minecraft.getInstance();
 
-                        if (client.options.hideGui) return;
+                    if (client.options.hideGui) return;
 
-                        if (config.modEnabled && config.showHud) {
-                            Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
-                            if (!logs.isEmpty()) {
-                                guiGraphics.drawString(
-                                        client.font,
-                                        "Logs Remaining: " + logs.size(),
-                                        config.hudX,
-                                        config.hudY,
-                                        config.getTextColor()
-                                );
-                            }
-                        }
+                    int screenW = client.getWindow().getGuiScaledWidth();
+                    int screenH = client.getWindow().getGuiScaledHeight();
 
-                        if (config.showStatusMessage &&
-                                System.currentTimeMillis() - statusMessageTime < 3000) {
-                            guiGraphics.drawString(
-                                    client.font,
-                                    statusMessageText,
-                                    config.statusHudX,
-                                    config.statusHudY,
-                                    0xFFFFFF
-                            );
+                    if (config.modEnabled && config.showHud) {
+                        Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
+                        if (!logs.isEmpty()) {
+                            String text = "Logs Remaining: " + logs.size();
+                            int textWidth = client.font.width(text);
+                            int x = HudPositionResolver.resolveX(config.hudPos.anchor, config.hudPos.xOffset, textWidth, screenW);
+                            int y = HudPositionResolver.resolveY(config.hudPos.anchor, config.hudPos.yOffset, client.font.lineHeight, screenH);
+                            guiGraphics.drawString(client.font, text, x, y, config.getTextColor());
                         }
                     }
-            ));
-        });
+
+                    if (config.showStatusMessage &&
+                            System.currentTimeMillis() - statusMessageTime < 3000) {
+                        int textWidth = client.font.width(statusMessageText);
+                        int x = HudPositionResolver.resolveX(config.statusHudPos.anchor, config.statusHudPos.xOffset, textWidth, screenW);
+                        int y = HudPositionResolver.resolveY(config.statusHudPos.anchor, config.statusHudPos.yOffset, client.font.lineHeight, screenH);
+                        guiGraphics.drawString(client.font, statusMessageText, x, y, 0xFFFFFF);
+                    }
+                }
+        )));
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             Minecraft client = Minecraft.getInstance();
@@ -155,7 +145,6 @@ public class TreeLogHighlightClient implements ClientModInitializer {
             RenderType fillLayer  = config.showThroughWalls ? HIGHLIGHT_FILL_NODEPTH  : HIGHLIGHT_FILL;
             RenderType linesLayer = config.showThroughWalls ? HIGHLIGHT_LINES_NODEPTH : HIGHLIGHT_LINES;
 
-            // Batch Render Full Blocks
             if (config.renderMode == TreeLogHighlightConfig.RenderMode.FULL
                     || config.renderMode == TreeLogHighlightConfig.RenderMode.BOTH) {
                 ByteBufferBuilder byteBuffer = new ByteBufferBuilder(fillLayer.bufferSize());
@@ -179,8 +168,6 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                 byteBuffer.close();
             }
 
-            // Batch Render Outlines
-            // LINES pipeline requires POSITION_COLOR_NORMAL vertex format
             if (config.renderMode == TreeLogHighlightConfig.RenderMode.OUTLINE
                     || config.renderMode == TreeLogHighlightConfig.RenderMode.BOTH) {
                 ByteBufferBuilder byteBuffer = new ByteBufferBuilder(linesLayer.bufferSize());
@@ -204,10 +191,6 @@ public class TreeLogHighlightClient implements ClientModInitializer {
         return config;
     }
 
-    /**
-     * Renders a line-box outline. Uses POSITION_COLOR_NORMAL format required by the LINES pipeline.
-     * Each line segment needs two vertices; normals are set per-segment direction.
-     */
     private static void renderLineBox(PoseStack poseStack, VertexConsumer buffer,
                                       double x1, double y1, double z1, double x2, double y2, double z2,
                                       float r, float g, float b, float a) {

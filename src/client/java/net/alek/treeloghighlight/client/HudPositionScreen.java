@@ -16,6 +16,10 @@ public class HudPositionScreen extends Screen {
     private static final int BUTTON_WIDTH = 90;
     private static final int BUTTON_HEIGHT = 20;
 
+    private static final String LOGS_TEXT = "Logs Remaining: 100";
+    private static final String STATUS_TEXT = "Tree Log Highlight: §aEnabled";
+    private static final String BUTTON_TEXT = "[ Edit Tree HUD ]";
+
     public HudPositionScreen(Screen parent) {
         super(Component.literal("Adjust HUD Positions"));
         this.parent = parent;
@@ -24,41 +28,41 @@ public class HudPositionScreen extends Screen {
 
     @Override
     protected void init() {
-        // Add Reset Button at the bottom
-        this.addRenderableWidget(Button.builder(Component.literal("Reset Defaults"), button -> {
-            resetToDefaults();
-        }).pos(this.width / 2 - 50, this.height - 30).size(100, 20).build());
-
+        this.addRenderableWidget(Button.builder(Component.literal("Reset Defaults"), button -> resetToDefaults()).pos(this.width / 2 - 50, this.height - 30).size(100, 20).build());
     }
 
     private void resetToDefaults() {
-        config.hudX = 20;
-        config.hudY = 50;
-        config.editButtonX = 10;
-        config.editButtonY = 5;
-        config.statusHudX = 572;
-        config.statusHudY = 617;
+        config.hudPos = new TreeLogHighlightConfig.HudPos(TreeLogHighlightConfig.HudAnchor.TOP_LEFT, 20, 50);
+        config.editButtonPos = new TreeLogHighlightConfig.HudPos(TreeLogHighlightConfig.HudAnchor.TOP_LEFT, 10, 5);
+        config.statusHudPos = new TreeLogHighlightConfig.HudPos(TreeLogHighlightConfig.HudAnchor.BOTTOM_CENTER, 0, 68);
     }
+
+    // --- Helpers to resolve current on-screen position for each element ---
+
+    private int logsX() { return HudPositionResolver.resolveX(config.hudPos.anchor, config.hudPos.xOffset, this.font.width(LOGS_TEXT), this.width); }
+    private int logsY() { return HudPositionResolver.resolveY(config.hudPos.anchor, config.hudPos.yOffset, this.font.lineHeight, this.height); }
+
+    private int statusX() { return HudPositionResolver.resolveX(config.statusHudPos.anchor, config.statusHudPos.xOffset, this.font.width(STATUS_TEXT), this.width); }
+    private int statusY() { return HudPositionResolver.resolveY(config.statusHudPos.anchor, config.statusHudPos.yOffset, this.font.lineHeight, this.height); }
+
+    private int buttonX() { return HudPositionResolver.resolveX(config.editButtonPos.anchor, config.editButtonPos.xOffset, BUTTON_WIDTH, this.width); }
+    private int buttonY() { return HudPositionResolver.resolveY(config.editButtonPos.anchor, config.editButtonPos.yOffset, BUTTON_HEIGHT, this.height); }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        // Draw a simple dark tint instead of the blurry background
         graphics.fill(0, 0, this.width, this.height, 0x44000000);
         
         graphics.drawCenteredString(this.font, "Click and Drag elements to position them", this.width / 2, 10, 0xFFFFFF);
         graphics.drawCenteredString(this.font, "Press ESC to Save and Close", this.width / 2, 22, 0xAAAAAA);
 
         // --- 1. Logs Remaining ---
-        String logsText = "Logs Remaining: 100";
-        renderElement(graphics, mouseX, mouseY, config.hudX, config.hudY, this.font.width(logsText), this.font.lineHeight, logsText, config.getTextColor(), Dragging.LOGS);
+        renderElement(graphics, mouseX, mouseY, logsX(), logsY(), this.font.width(LOGS_TEXT), this.font.lineHeight, LOGS_TEXT, config.getTextColor(), Dragging.LOGS);
 
         // --- 2. Status Message ---
-        String statusText = "Tree Log Highlight: §aEnabled";
-        renderElement(graphics, mouseX, mouseY, config.statusHudX, config.statusHudY, this.font.width(statusText), this.font.lineHeight, statusText, 0xFFFFFF, Dragging.STATUS);
+        renderElement(graphics, mouseX, mouseY, statusX(), statusY(), this.font.width(STATUS_TEXT), this.font.lineHeight, STATUS_TEXT, 0xFFFFFF, Dragging.STATUS);
 
         // --- 3. Edit Button ---
-        String buttonText = "[ Edit Tree HUD ]";
-        renderElement(graphics, mouseX, mouseY, config.editButtonX, config.editButtonY, BUTTON_WIDTH, BUTTON_HEIGHT, buttonText, 0xFFFFFF, Dragging.BUTTON);
+        renderElement(graphics, mouseX, mouseY, buttonX(), buttonY(), BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_TEXT, 0xFFFFFF, Dragging.BUTTON);
 
         // Render widgets (the Reset Button) manually to avoid calling super.render() which causes blur
         super.render(graphics, mouseX, mouseY, delta);
@@ -84,11 +88,11 @@ public class HudPositionScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (isHovering(mouseX, mouseY, config.hudX, config.hudY, this.font.width("Logs Remaining: 100"), this.font.lineHeight)) {
+        if (isHovering(mouseX, mouseY, logsX(), logsY(), this.font.width(LOGS_TEXT), this.font.lineHeight)) {
             currentDrag = Dragging.LOGS;
-        } else if (isHovering(mouseX, mouseY, config.statusHudX, config.statusHudY, this.font.width("Tree Log Highlight: §aEnabled"), this.font.lineHeight)) {
+        } else if (isHovering(mouseX, mouseY, statusX(), statusY(), this.font.width(STATUS_TEXT), this.font.lineHeight)) {
             currentDrag = Dragging.STATUS;
-        } else if (isHovering(mouseX, mouseY, config.editButtonX, config.editButtonY, BUTTON_WIDTH, BUTTON_HEIGHT)) {
+        } else if (isHovering(mouseX, mouseY, buttonX(), buttonY(), BUTTON_WIDTH, BUTTON_HEIGHT)) {
             currentDrag = Dragging.BUTTON;
         }
 
@@ -103,15 +107,15 @@ public class HudPositionScreen extends Screen {
     }
 
     private int getTargetX() {
-        if (currentDrag == Dragging.LOGS) return config.hudX;
-        if (currentDrag == Dragging.STATUS) return config.statusHudX;
-        return config.editButtonX;
+        if (currentDrag == Dragging.LOGS) return logsX();
+        if (currentDrag == Dragging.STATUS) return statusX();
+        return buttonX();
     }
 
     private int getTargetY() {
-        if (currentDrag == Dragging.LOGS) return config.hudY;
-        if (currentDrag == Dragging.STATUS) return config.statusHudY;
-        return config.editButtonY;
+        if (currentDrag == Dragging.LOGS) return logsY();
+        if (currentDrag == Dragging.STATUS) return statusY();
+        return buttonY();
     }
 
     private boolean isHovering(double mx, double my, int x, int y, int w, int h) {
@@ -126,23 +130,37 @@ public class HudPositionScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (currentDrag == Dragging.LOGS) {
-            config.hudX = (int) (mouseX - dragOffsetX);
-            config.hudY = (int) (mouseY - dragOffsetY);
-        } else if (currentDrag == Dragging.STATUS) {
-            config.statusHudX = (int) (mouseX - dragOffsetX);
-            config.statusHudY = (int) (mouseY - dragOffsetY);
-        } else if (currentDrag == Dragging.BUTTON) {
-            config.editButtonX = (int) (mouseX - dragOffsetX);
-            config.editButtonY = (int) (mouseY - dragOffsetY);
+        if (currentDrag == Dragging.NONE) {
+            return true;
         }
-        
-        config.hudX = Math.max(0, Math.min(config.hudX, this.width - 50));
-        config.hudY = Math.max(0, Math.min(config.hudY, this.height - 10));
-        config.statusHudX = Math.max(0, Math.min(config.statusHudX, this.width - 50));
-        config.statusHudY = Math.max(0, Math.min(config.statusHudY, this.height - 10));
-        config.editButtonX = Math.max(0, Math.min(config.editButtonX, this.width - BUTTON_WIDTH));
-        config.editButtonY = Math.max(0, Math.min(config.editButtonY, this.height - BUTTON_HEIGHT));
+
+        int elementWidth;
+        int elementHeight;
+        switch (currentDrag) {
+            case LOGS -> { elementWidth = this.font.width(LOGS_TEXT); elementHeight = this.font.lineHeight; }
+            case STATUS -> { elementWidth = this.font.width(STATUS_TEXT); elementHeight = this.font.lineHeight; }
+            default -> { elementWidth = BUTTON_WIDTH; elementHeight = BUTTON_HEIGHT; }
+        }
+
+        int rawX = (int) (mouseX - dragOffsetX);
+        int rawY = (int) (mouseY - dragOffsetY);
+
+        // Clamp to screen bounds so elements can't be dragged fully off-screen
+        rawX = Math.clamp(rawX, 0, this.width - elementWidth);
+        rawY = Math.clamp(rawY, 0, this.height - elementHeight);
+
+        // Convert the raw drop point back into anchor + offset so the saved
+        // position survives future resolution/GUI scale/monitor changes too,
+        // not just the built-in defaults.
+        TreeLogHighlightConfig.HudPos newPos = HudPositionResolver.fromDropPoint(
+                rawX, rawY, elementWidth, elementHeight, this.width, this.height);
+
+        switch (currentDrag) {
+            case LOGS -> config.hudPos = newPos;
+            case STATUS -> config.statusHudPos = newPos;
+            case BUTTON -> config.editButtonPos = newPos;
+            default -> {}
+        }
 
         return true;
     }
@@ -150,6 +168,7 @@ public class HudPositionScreen extends Screen {
     @Override
     public void onClose() {
         config.save();
+        assert this.minecraft != null;
         this.minecraft.setScreen(parent);
     }
 
