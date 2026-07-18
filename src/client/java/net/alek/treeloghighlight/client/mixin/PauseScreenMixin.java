@@ -1,6 +1,7 @@
 package net.alek.treeloghighlight.client.mixin;
 
 import net.alek.treeloghighlight.client.HudPositionScreen;
+import net.alek.treeloghighlight.client.HudPositionResolver;
 import net.alek.treeloghighlight.client.TreeLogHighlightClient;
 import net.alek.treeloghighlight.client.TreeLogHighlightConfig;
 import net.minecraft.client.Minecraft;
@@ -15,6 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PauseScreen.class)
 public abstract class PauseScreenMixin extends Screen {
+    private static final int BUTTON_WIDTH = 90;
+    private static final int BUTTON_HEIGHT = 20;
+
     protected PauseScreenMixin(Component title) {
         super(title);
     }
@@ -22,17 +26,18 @@ public abstract class PauseScreenMixin extends Screen {
     @Inject(method = "init", at = @At("RETURN"))
     private void addEditHudButton(CallbackInfo ci) {
         TreeLogHighlightConfig config = TreeLogHighlightClient.getConfig();
-        
-        int x = config.editButtonX;
-        if (x == -1) {
-            x = this.width - 95; // Default top right
-        }
+
+        // Resolved from anchor + offset against this screen's actual scaled
+        // size, so it lands in the same place regardless of resolution/GUI
+        // scale/monitor - no -1 sentinel/fallback needed anymore.
+        int x = HudPositionResolver.resolveX(config.editButtonPos.anchor, config.editButtonPos.xOffset, BUTTON_WIDTH, this.width);
+        int y = HudPositionResolver.resolveY(config.editButtonPos.anchor, config.editButtonPos.yOffset, BUTTON_HEIGHT, this.height);
 
         this.addRenderableWidget(Button.builder(Component.literal("Edit Tree HUD"), button -> {
-            Minecraft.getInstance().setScreen(new HudPositionScreen(this));
-        })
-        .pos(x, config.editButtonY)
-        .size(90, 20)
-        .build());
+                    Minecraft.getInstance().setScreen(new HudPositionScreen(this));
+                })
+                .pos(x, y)
+                .size(BUTTON_WIDTH, BUTTON_HEIGHT)
+                .build());
     }
 }

@@ -16,30 +16,55 @@ public class TreeLogHighlightConfig {
 
     public enum RenderMode { OUTLINE, FULL, BOTH }
 
+    // Where on screen a HUD element sits. Positions are resolved relative to
+    // the current scaled screen size at render time, so they stay correct
+    // across any resolution / GUI scale / monitor.
+    public enum HudAnchor {
+        TOP_LEFT, TOP_CENTER, TOP_RIGHT,
+        MIDDLE_LEFT, CENTER, MIDDLE_RIGHT,
+        BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT
+    }
+
+    public static class HudPos {
+        public HudAnchor anchor;
+        public int xOffset;
+        public int yOffset;
+
+        public HudPos() {
+            // needed for Gson
+            this(HudAnchor.TOP_LEFT, 0, 0);
+        }
+
+        public HudPos(HudAnchor anchor, int xOffset, int yOffset) {
+            this.anchor = anchor;
+            this.xOffset = xOffset;
+            this.yOffset = yOffset;
+        }
+    }
+
     public boolean modEnabled = true;
     public RenderMode renderMode = RenderMode.BOTH;
-    
+
     // Colors
     public boolean syncColors = true;
     public int mainColor = 0xFF8000;
     public int outlineColor = 0xFF8000;
     public int fillColor = 0xFF8000;
     public int textColor = 0xFF8000;
-    
+
     public float alpha = 0.3f;
     public boolean showThroughWalls = true;
-    
+
     // HUD
     public boolean showHud = true;
-    public int hudX = 20;
-    public int hudY = 50;
-    public boolean showStatusMessage = true;
-    public int statusHudX = 572;
-    public int statusHudY = 617;
+    public HudPos hudPos = new HudPos(HudAnchor.TOP_LEFT, 20, 50);
 
-    public int editButtonX = 10; 
-    public int editButtonY = 5;
-    
+    public boolean showStatusMessage = true;
+    public HudPos statusHudPos = new HudPos(HudAnchor.BOTTOM_CENTER, 0, 68);
+
+    // Pause-screen edit button
+    public HudPos editButtonPos = new HudPos(HudAnchor.TOP_LEFT, 10, 5);
+
     public boolean pulsing = true;
     public float pulseSpeed = 1.0f;
     public float pulseIntensity = 0.5f;
@@ -56,15 +81,25 @@ public class TreeLogHighlightConfig {
                 e.printStackTrace();
             }
         }
-        
+
         if (config == null) {
             config = new TreeLogHighlightConfig();
         }
-        
+
         if (config.woodTypeToggles == null) {
             config.woodTypeToggles = new LinkedHashMap<>();
         }
-        
+
+        if (config.hudPos == null) {
+            config.hudPos = new HudPos(HudAnchor.TOP_LEFT, 20, 50);
+        }
+        if (config.statusHudPos == null) {
+            config.statusHudPos = new HudPos(HudAnchor.BOTTOM_CENTER, 0, 68);
+        }
+        if (config.editButtonPos == null) {
+            config.editButtonPos = new HudPos(HudAnchor.TOP_LEFT, 10, 5);
+        }
+
         config.save();
         return config;
     }
@@ -92,6 +127,6 @@ public class TreeLogHighlightConfig {
     public float getOutlineR() { return (((syncColors ? mainColor : outlineColor) >> 16) & 0xFF) / 255.0f; }
     public float getOutlineG() { return (((syncColors ? mainColor : outlineColor) >> 8) & 0xFF) / 255.0f; }
     public float getOutlineB() { return ((syncColors ? mainColor : outlineColor) & 0xFF) / 255.0f; }
-    
+
     public int getTextColor() { return syncColors ? mainColor : textColor; }
 }

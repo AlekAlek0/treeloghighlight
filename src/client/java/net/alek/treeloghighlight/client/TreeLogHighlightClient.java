@@ -41,16 +41,25 @@ public class TreeLogHighlightClient implements ClientModInitializer {
             Minecraft client = Minecraft.getInstance();
             if (client.options.hideGui) return;
 
+            int screenW = client.getWindow().getGuiScaledWidth();
+            int screenH = client.getWindow().getGuiScaledHeight();
+
             if (config.modEnabled && config.showHud) {
                 Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
                 if (!logs.isEmpty()) {
                     String text = "Logs Remaining: " + logs.size();
-                    guiGraphics.drawString(client.font, text, config.hudX, config.hudY, config.getTextColor());
+                    int textWidth = client.font.width(text);
+                    int x = HudPositionResolver.resolveX(config.hudPos.anchor, config.hudPos.xOffset, textWidth, screenW);
+                    int y = HudPositionResolver.resolveY(config.hudPos.anchor, config.hudPos.yOffset, client.font.lineHeight, screenH);
+                    guiGraphics.drawString(client.font, text, x, y, config.getTextColor());
                 }
             }
 
             if (config.showStatusMessage && System.currentTimeMillis() - statusMessageTime < 3000) {
-                guiGraphics.drawString(client.font, statusMessageText, config.statusHudX, config.statusHudY, 0xFFFFFF);
+                int textWidth = client.font.width(statusMessageText);
+                int x = HudPositionResolver.resolveX(config.statusHudPos.anchor, config.statusHudPos.xOffset, textWidth, screenW);
+                int y = HudPositionResolver.resolveY(config.statusHudPos.anchor, config.statusHudPos.yOffset, client.font.lineHeight, screenH);
+                guiGraphics.drawString(client.font, statusMessageText, x, y, 0xFFFFFF);
             }
         });
 
