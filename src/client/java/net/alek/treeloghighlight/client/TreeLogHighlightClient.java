@@ -22,7 +22,7 @@ import java.util.Set;
 public class TreeLogHighlightClient implements ClientModInitializer {
     private static TreeLogHighlightConfig config;
     private static KeyMapping toggleKey;
-    
+
     private static long statusMessageTime = 0;
     private static String statusMessageText = "";
 
@@ -40,16 +40,28 @@ public class TreeLogHighlightClient implements ClientModInitializer {
             Minecraft client = Minecraft.getInstance();
             if (client.options.hideGui) return;
 
+            // Always resolve against the CURRENT scaled screen size, not a
+            // cached value - this is what makes positions correct across any
+            // resolution / GUI scale / monitor.
+            int screenW = client.getWindow().getGuiScaledWidth();
+            int screenH = client.getWindow().getGuiScaledHeight();
+
             if (config.modEnabled && config.showHud) {
                 Set<BlockPos> logs = TreeLogHighlightManager.getHighlightedLogs();
                 if (!logs.isEmpty()) {
                     String text = "Logs Remaining: " + logs.size();
-                    guiGraphics.drawString(client.font, text, config.hudX, config.hudY, config.getTextColor());
+                    int textWidth = client.font.width(text);
+                    int x = HudPositionResolver.resolveX(config.hudPos.anchor, config.hudPos.xOffset, textWidth, screenW);
+                    int y = HudPositionResolver.resolveY(config.hudPos.anchor, config.hudPos.yOffset, client.font.lineHeight, screenH);
+                    guiGraphics.drawString(client.font, text, x, y, config.getTextColor());
                 }
             }
 
             if (config.showStatusMessage && System.currentTimeMillis() - statusMessageTime < 3000) {
-                guiGraphics.drawString(client.font, statusMessageText, config.statusHudX, config.statusHudY, 0xFFFFFF);
+                int textWidth = client.font.width(statusMessageText);
+                int x = HudPositionResolver.resolveX(config.statusHudPos.anchor, config.statusHudPos.xOffset, textWidth, screenW);
+                int y = HudPositionResolver.resolveY(config.statusHudPos.anchor, config.statusHudPos.yOffset, client.font.lineHeight, screenH);
+                guiGraphics.drawString(client.font, statusMessageText, x, y, 0xFFFFFF);
             }
         });
 
@@ -99,6 +111,7 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                 BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
                 boolean hasData = false;
                 for (BlockPos pos : logs) {
+                    assert matrixStack != null;
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
                     if (drawBox(client.level, pos, bufferBuilder, matrixStack.last().pose(), 0, 0, 0, 1, 1, 1, config.getFillR(), config.getFillG(), config.getFillB(), config.alpha * pulse)) {
@@ -116,6 +129,7 @@ public class TreeLogHighlightClient implements ClientModInitializer {
             if (config.renderMode == TreeLogHighlightConfig.RenderMode.OUTLINE || config.renderMode == TreeLogHighlightConfig.RenderMode.BOTH) {
                 BufferBuilder lineBuilder = tesselator.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
                 for (BlockPos pos : logs) {
+                    assert matrixStack != null;
                     matrixStack.pushPose();
                     matrixStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
                     ShapeRenderer.renderLineBox(matrixStack, lineBuilder, 0, 0, 0, 1, 1, 1, config.getOutlineR(), config.getOutlineG(), config.getOutlineB(), 0.5f * pulse);
