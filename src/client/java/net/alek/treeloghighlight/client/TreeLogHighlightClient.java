@@ -113,7 +113,7 @@ public class TreeLogHighlightClient implements ClientModInitializer {
                         int textWidth = client.font.width(statusMessageText);
                         int x = HudPositionResolver.resolveX(config.statusHudPos.anchor, config.statusHudPos.xOffset, textWidth, screenW);
                         int y = HudPositionResolver.resolveY(config.statusHudPos.anchor, config.statusHudPos.yOffset, client.font.lineHeight, screenH);
-                        guiGraphics.drawString(client.font, statusMessageText, x, y, 0xFFFFFF);
+                        guiGraphics.drawString(client.font, statusMessageText, x, y, 0xFFFFFFFF);
                     }
                 }
         );
